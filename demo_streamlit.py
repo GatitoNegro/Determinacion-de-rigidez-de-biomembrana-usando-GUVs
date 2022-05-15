@@ -9,12 +9,14 @@ import math as mt
 
 from sympy import C
 
+@st.cache
 def binarizar(imagen,n1,n2,bl,c):
   median = cv2.medianBlur(imagen,n1) #filtro de la mediana con kernel 
   binarizada = cv2.adaptiveThreshold (median, 255 , cv2.ADAPTIVE_THRESH_GAUSSIAN_C , cv2.THRESH_BINARY,bl,c) #ingresar ultimos 2 parametros
   binarizadaf = cv2.medianBlur(binarizada,n2) 
   return binarizadaf
 
+@st.cache
 def calcularcentro(bin):
   M1 = cv2.moments(bin)
   if M1["m00"]==0: M1["m00"]=1
@@ -24,6 +26,7 @@ def calcularcentro(bin):
   coord = (cX1, cY1)
   return coord
 
+@st.cache
 def calcularcontorno(binarizadam,frame):
   contorn,hierarchy=cv2.findContours(binarizadam,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
   lista=list(contorn)
@@ -48,11 +51,13 @@ def calcularcontorno(binarizadam,frame):
       #print(f"error, hay menos de 2 contornos de tamaño considerable,en el frame:{frame}")
   return lista
 
+@st.cache
 def dibujarcontorno(cont,a):
   dibujo = np.zeros((dimensiones[1], dimensiones[2]))
   cv2.drawContours(dibujo, cont, a, 255, 2)
   return dibujo
 
+@st.cache
 def calcularpolares(cont,cm):
   radiocomponentes = cont-cm
   radio = pow((pow(radiocomponentes,2).sum(axis=-1)),1/2).round(2) #Axis no entendi
@@ -60,6 +65,7 @@ def calcularpolares(cont,cm):
   pol = np.append(angulo,radio,axis=1)
   return pol
 
+@st.cache
 def discretizar(pol,v):
   n = -1 #discretiza los valores del angulo con escalon de v grados
   for i in pol[:,0]: 
@@ -119,40 +125,42 @@ def discretizar(pol,v):
       m = m+1
   return discretizada_ord
 
+@st.cache
 def calcularcoeficientes(discre):
-  An=np.zeros([50])
+  An = np.zeros([50])
   for n in range(1,51):
-    cos=np.cos(n*discre[:,0]*np.pi/180)
-    cos_radio=cos*discre[:,1]
-    sumatoria=0
+    cos = np.cos(n*discre[:,0]*np.pi/180)
+    cos_radio = cos*discre[:,1]
+    sumatoria = 0
     for h in range(cos_radio.shape[0]):
-      suma=cos_radio[h]+cos_radio[(h+1)%cos_radio.shape[0]]
-      resta=discre[(h+1)%cos_radio.shape[0],0]*np.pi/180-discre[h,0]*np.pi/180
+      suma = cos_radio[h]+cos_radio[(h+1)%cos_radio.shape[0]]
+      resta = discre[(h+1)%cos_radio.shape[0],0]*np.pi/180-discre[h,0]*np.pi/180
       if (h+1)%cos_radio.shape[0]==0:
-        resta=resta+2*np.pi
-      producto=suma*resta
-      sumatoria=sumatoria+producto
-    An[n-1]=sumatoria/(2*np.pi)
+        resta = resta+2*np.pi
+      producto = suma*resta
+      sumatoria = sumatoria+producto
+    An[n-1] = sumatoria/(2*np.pi)
 
-  Bn=np.zeros([50])
+  Bn = np.zeros([50])
   for n in range(1,51):
-    sin=np.sin(n*discre[:,0]*np.pi/180)
-    sin_radio=sin*discre[:,1]
-    sumatoria=0
+    sin = np.sin(n*discre[:,0]*np.pi/180)
+    sin_radio = sin*discre[:,1]
+    sumatoria = 0
     for h in range(sin_radio.shape[0]):
-      suma=sin_radio[h]+sin_radio[(h+1)%sin_radio.shape[0]]
-      resta=discre[(h+1)%sin_radio.shape[0],0]*np.pi/180-discre[h,0]*np.pi/180
+      suma = sin_radio[h]+sin_radio[(h+1)%sin_radio.shape[0]]
+      resta = discre[(h+1)%sin_radio.shape[0],0]*np.pi/180-discre[h,0]*np.pi/180
       if (h+1)%sin_radio.shape[0]==0:
-        resta=resta+2*np.pi
-      producto=suma*resta
-      sumatoria=sumatoria+producto
-    Bn[n-1]=sumatoria/(2*np.pi)
+        resta = resta+2*np.pi
+      producto = suma*resta
+      sumatoria = sumatoria+producto
+    Bn[n-1] = sumatoria/(2*np.pi)
   return (An,Bn)
 
+@st.cache (suppress_st_warning=True)
 def construir_contorno(frames, video_np):
-  r=np.zeros([frames, 180])
+  r = np.zeros([frames, 180])
   for j in range(frames):
-    imagen=video_np[j,:,:]
+    imagen = video_np[j,:,:]
     imagen = np.uint8(imagen)
     imagen_binarizada = binarizar(imagen, kernel1, kernel2, blocksize,constant)
     contorno = calcularcontorno(imagen_binarizada,j)
@@ -160,20 +168,101 @@ def construir_contorno(frames, video_np):
     coordenadas = calcularcentro (dibujocontorno)
     polares = calcularpolares(contorno[0],coordenadas) #contorno 0 es e mas grande externo, para el interno cambiar a 1. 
     discreto = discretizar(polares,180)
-    r[j,:]=(discreto[:,1])# radio y angulos
-    AyB=np.zeros([frames, 50, 2])
+    r[j,:] = (discreto[:,1])# radio y angulos
+    AyB = np.zeros([frames, 50, 2])
     An,Bn = calcularcoeficientes(discreto)
-    AyB[j,:,0]=An
-    AyB[j,:,1]=Bn
+    AyB[j,:,0] = An
+    AyB[j,:,1] = Bn
   return (r,AyB)
 
+@st.cache
 def eliminar(f,c,video_np):
   for i in range(0,c,1):
-    video_np=np.delete(video_np,int(f),0)
+    video_np = np.delete(video_np,int(f),0)
     cantidad = video_np.shape[0]
-  return(video_np,cantidad)
+  return(video_np, cantidad)
    #verificar variables, globales y locales.
 
+@st.cache
+def factorn (q,l):
+  factorial_resta = mt.factorial(l-q)
+  factorial_suma = mt.factorial(l+q)
+  pi = 4*mt.pi
+  factor_normalizacion = (((2*l)+1)/pi)*(factorial_resta/factorial_suma)
+  return factor_normalizacion
+
+@st.cache
+def denom (l,tension):
+  denominador = (l+2)*(l-1)*((l*(l+1))+tension)
+  return denominador
+
+@st.cache
+def numerad (q,l):
+  numerador = factorn(q,l)*pol[q,l]*pol[q,l]
+  return numerador
+
+@st.cache
+def sumatoria (q,t):
+  sumatoria = 0
+  for l in range(q,200):
+    if l>=2:
+      termino = numerad(q,l)/denom(l,t)
+      sumatoria = sumatoria + termino
+    Sq = sumatoria
+  return Sq
+
+@st.cache (suppress_st_warning=True)
+def calculark (q, Vq):
+  kBT=4*10**(-21) #julios constate por temperatura en kelvin
+  radio_prom= 0.3*(10**(-6)) #metros 0.3micrometro
+  kp=1.4*(10**(-22))
+  teffp=1*(10**(-6))
+  listateff=[]
+  teffmin=-1*(10**(-9))
+  teffmax=1*(10**(-4))
+  listateff.append(teffmin)
+  listateff.append(teffmax)
+  #Vq= calculo_Vq(AyB,Rprom)
+  p=0
+  error=100
+  while error>1:
+    p=p+1
+    print(f"ciclo {p}")
+    paso=(max(listateff)-min(listateff))/400
+    inicio=min(listateff)
+    fin=max(listateff)
+    print(f" k: {kp}+/-{round(error,1)}%")
+    for i in range(6):
+      listak=[]
+      for teff_indice in np.arange(inicio,fin,paso):#teff_idice es la teff que ira tomando valores del rango 
+        t=(teff_indice*radio_prom*radio_prom)/kp# adimensional
+        Sq=sumatoria (q,t)
+        k=Sq*kBT/Vq[q]
+        listak.append(k)
+      kp=sum(listak)/float(len(listak))
+      print(i,min(listak),max(listak))
+      error=abs((max(listak)-min(listak))/kp)*40
+
+    paso=(max(listak)-min(listak))/400
+    inicio=min(listak)
+    fin=max(listak)
+    print(f" tension: {teffp}+/-{max(listateff)-min(listateff)}")
+    for i in range (3):
+      listateff=[]
+      for k_indice in np.arange(inicio,fin,paso):
+        t=(teffp*radio_prom*radio_prom)/k_indice# adimensional 
+        Sq=sumatoria (q,t)
+        teff=Sq*t*kBT/(Vq[q]*radio_prom*radio_prom)
+        listateff.append(teff)
+      teffp=sum(listateff)/float(len(listateff))
+      print(i,min(listateff),max(listateff))
+    print('-----')
+  print('----------------------------------------')
+  print(f" q={q}")
+  print(f" k: {kp}+/-{round(error,1)}%")
+  print(f" tension efectiva: {teffp}+/-{max(listateff)-min(listateff)}")
+  print('----------------------------------------')  
+  return kp
 
 header = st.container()
 with header:
@@ -239,10 +328,15 @@ with header:
         dibujocontorno = dibujarcontorno(contorno,0) #por que esta aca esta?
         st.image(dibujocontorno, caption=f'Contorno de imagen {x}', clamp=True)
   
+
+
     r, AyB = construir_contorno(frames, video_np)
     R = r.T # a dibujar
-    st.write('dibujo de r')
-    st.line_chart(R)  #grafico de radio por frame
+
+    imagenes = st.container()
+    with imagenes:
+      st.write('dibujo de r')
+      st.line_chart(R)  #grafico de radio por frame
 
     Rpromedio=np.mean(r,axis=1) #dibujar promedio de cada frame
     Rprom=np.mean(Rpromedio) #tiene radio promedio de promedio de cada frame
@@ -254,26 +348,22 @@ with header:
   #se ve el grafico y se ajustan parametrso de filtrado para luego calcular contornos
     inicio = st.sidebar.number_input('Inicio de eliminacion',0)
     rango = st.sidebar.number_input('Cuantos frames siguientes?',0,50)
-    
+  
     if st.button('Eliminar frames'):
       video_np, frames = eliminar(inicio,rango,video_np) 
       st.write(f'nuevo tamanio de matriz: {frames}')
       r,AyB = construir_contorno(frames, video_np)
       R = r.T # a dibujar
-      st.write('dibujo de r')
-      st.line_chart(R)    
-      st.write('okay')   
+      with imagenes:
+        st.write('dibujo de r')
+        st.line_chart(R)    
+    
       #no se esta actualizando el numero de frames en barra de video original. 
     else:
       st.write('Nada para eliminar')
 
     if st.button('Procesar imagenes'):
-      st.write('Se calculara valores Vq y de k PROXIMAMENTE')      
-    else:
-      st.write('nada aun')
-
-# UBICAR FUNCIONES  
-    def calculo_Vq (AyB,Rprom):
+      progreso = st.progress(0)
       AyBn=AyB*(1/Rprom)
       AyBmedia=np.zeros([50,2])
       AyBmedia[:,0]=np.mean(AyBn[:,:,0],axis=0)
@@ -283,43 +373,44 @@ with header:
       for q in range(50):
         AyBresta[:,q,0]=AyBn[:,q,0]-AyBmedia[q,0]
         AyBresta[:,q,1]=AyBn[:,q,1]-AyBmedia[q,1]
-      AyBcuadrado=AyBresta*AyBresta
-      Vq=0.25*(np.mean(AyBcuadrado[:,:,0],axis=0)+np.mean(AyBcuadrado[:,:,1],axis=0))
-      return Vq
+      AyBcuadrado = AyBresta*AyBresta
+      Vq = 0.25*(np.mean(AyBcuadrado[:,:,0],axis=0) + np.mean(AyBcuadrado[:,:,1],axis=0))
+      # return Vq
+      q_max = 50 #order of the Legendre function derivation q menor o igual a l identico a m. Era 25 orden del polinimio
+      l_max = 200 # degree of the Legendre function, identico a n grado del polinomio
+      polypolderi = sc.lpmn(q_max, l_max, 0) 
+      pol = polypolderi[0]
+      #pol[0,:]
+      #Aqui Pmn es Plq que seria q=m y l=n- --q orden de derev l grado del polonimio----- en 
+      #Return two arrays of size (m+1, n+1) containing Pmn(z) and Pmn'(z) for all orders from 0..m and degrees from 0..n.
+      #Retorna dos matrices de tamaño (m+1, n+1) que contienen Pmn(z) y Pmn'(z) para todos los órdenes desde 0..m y grados desde 0..n.
+    
+      # primer numero (q) orden del polinomio (asociado al orden de derivacion del polinomio) y el segundo(l) es el grado (asociado al grado de derivacion del polinomio)
+      # se muestran los polinomios de legendre de orden de derivacion 0, es decir,los propiamente dichos polinomios de legendre valuados en x=0
+      matriz_k = np.zeros((q_max,2)) #usamos la funcion mas importante
+      for i in range(0, q_max-1):
+        progreso.progress(i/q_max)
+        matriz_k[i,1] = calculark (i,Vq)
+        matriz_k[i,0] = i
+      #print(matriz_k)
+      suma = 0
+      can = 0
+      for j in range(6,25): #parametros van a ser entradas luego de ver el grafico de 6 y 25
+        suma = suma + matriz_k[j,1]
+        can = can + 1
+      promedio = suma/can
+      #print (promedio)
+      #scatter = matriz_k[:,0],matriz_k[:,1]   # Dibuja el gráfico
+      st.line_chart(matriz_k)
+      st.write(promedio) 
+      #plt.ylim(1*(10**(-20)),30*(10**(-20)))
+      #plt.xlim(2,40)
+      #plt.yticks(np.arange(1*(10**(-18)),25*(10**(-19))))
+      #plt.xticks(np.arange(0,50,1))
+    else:
+      st.write('nada aun')
 
-    q_max=50#order of the Legendre function derivation q menor o igual a l identico a m. Era 25 ''''''''''''''orden del polinimio
-    l_max=200 # degree of the Legendre function, identico a n ''''''''''''''''''''''''''''''''''''''''''''grado del polinomio
-    polypolderi=sc.lpmn(q_max, l_max, 0) #Aqui Pmn es Plq que seria q=m y l=n- --q orden de derev l grado del polonimio----- en 
-    #Return two arrays of size (m+1, n+1) containing Pmn(z) and Pmn'(z) for all orders from 0..m and degrees from 0..n.
-    #Retorna dos matrices de tamaño (m+1, n+1) que contienen Pmn(z) y Pmn'(z) para todos los órdenes desde 0..m y grados desde 0..n.
+    #def calculo_Vq (AyB,Rprom):
 
-    pol=polypolderi[0]
-    pol[0,:]# primer numero (q) orden del polinomio (asociado al orden de derivacion del polinomio) y el segundo(l) es el grado (asociado al grado de derivacion del polinomio)
-    # se muestran los polinomios de legendre de orden de derivacion 0, es decir,los propiamente dichos polinomios de legendre valuados en x=0
-    #matris_k=np.zeros((q_max,2)) #usamos la funcion mas importante
-    #for i in range(0,q_max-1):
-    #  matris_k[i,1]=calculark (i)
-    #  matris_k[i,0]=i
-    #print(matris_k)
-    #suma=0
-    #can=0
-    #for j in range(6,25): #parametros van a ser entradas luego de ver el grafico de 6 y 25
-    #  suma=suma+matris_k[j,1]
-    #  can=can+1
-    #promedio=suma/can
-    #print (promedio)
-    #kpromedio=promedio 
-    #plt.figure(figsize=(15,20))
-    #plt.scatter(matris_k[:,0],matris_k[:,1])   # Dibuja el gráfico
-    #plt.title("k fl binari comun  mediana 21 humbral 19 sin filtro mediana ultimo k 1.2746920005570453e-19 ")   # Establece el título del gráfico
-    #plt.ylabel("k")   # Establece el título del eje x
-    #plt.xlabel("q")   # Establece el título del eje y
-    #plt.ylim(1*(10**(-20)),30*(10**(-20)))
-    #plt.xlim(2,40)
-    #plt.yticks(np.arange(1*(10**(-18)),25*(10**(-19))))
-    #plt.xticks(np.arange(0,50,1))
-    #print("k promedio ")
-    #print (promedio)
-    #st.line_chart()
 
  
