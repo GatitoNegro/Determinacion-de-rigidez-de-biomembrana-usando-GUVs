@@ -411,25 +411,18 @@ with header:
           suma = suma + matriz_k[j,1]
           can = can + 1
         promedio = suma/can
-        #print (promedio)
-        #scatter = matriz_k[:,0],matriz_k[:,1]   # Dibuja el gráfico
+        
         kpromedio=promedio 
         fig, ax = plt.subplots()
-        ax.scatter(matriz_k[:,0],matriz_k[:,1])   # Dibuja el gráfico
-        # ax.set_title("Grafico de k")   # Establece el título del gráfico
+        ax.scatter(matriz_k[:,0], matriz_k[:,1]) 
+        # ax.set_title("Grafico de k")   
         # ax.set_ylabel("k")   # Establece el título del eje x
         # ax.set_xlabel("q")   # Establece el título del eje y
         # ax.set_ylim(0.1*(10**(-20)),100*(10**(-20)))
         # ax.set_xlim(2,40)
-        #plt.yticks(np.arange(1*(10**(-18)),25*(10**(-19))))
-        #plt.xticks(np.arange(0,50,1))
         st.pyplot(fig)
         st.write(promedio) 
 
-        #plt.ylim(1*(10**(-20)),30*(10**(-20)))
-        #plt.xlim(2,40)
-        #plt.yticks(np.arange(1*(10**(-18)),25*(10**(-19))))
-        #plt.xticks(np.arange(0,50,1))
       else:
         st.write('nada aun')
 
