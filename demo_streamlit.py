@@ -9,12 +9,14 @@ import math as mt
 
 from sympy import C
 
+@st.cache 
 def binarizar(imagen,n1,n2,bl,c):
   median = cv2.medianBlur(imagen,n1) #filtro de la mediana con kernel 
   binarizada = cv2.adaptiveThreshold (median, 255 , cv2.ADAPTIVE_THRESH_GAUSSIAN_C , cv2.THRESH_BINARY,bl,c) #ingresar ultimos 2 parametros
   binarizadaf = cv2.medianBlur(binarizada,n2) 
   return binarizadaf
 
+@st.cache 
 def calcularcentro(bin):
   M1 = cv2.moments(bin)
   if M1["m00"]==0: M1["m00"]=1
@@ -24,6 +26,7 @@ def calcularcentro(bin):
   coord = (cX1, cY1)
   return coord
 
+@st.cache 
 def calcularcontorno(binarizadam,frame):
   contorn,hierarchy=cv2.findContours(binarizadam,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
   lista=list(contorn)
@@ -48,10 +51,12 @@ def calcularcontorno(binarizadam,frame):
       #print(f"error, hay menos de 2 contornos de tamaño considerable,en el frame:{frame}")
   return lista
 
+@st.cache 
 def dibujarcontorno(cont,a):
   dibujo = np.zeros((dimensiones[1], dimensiones[2]))
   cv2.drawContours(dibujo, cont, a, 255, 2)
   return dibujo
+
 
 def calcularpolares(cont,cm):
   radiocomponentes = cont-cm
@@ -156,9 +161,11 @@ def calcularcoeficientes(discre):
 
 def eliminar(f,c):
   for i in range(0,c,1):
-    video_np = np.delete(video_np,int(f),0)
-    cantidad = video_np.shape[0]
-  return(video_np, cantidad)
+    video_np_recortada = np.delete(video_np,int(f),0)
+    cantidad = video_np_recortada.shape[0]
+    st.write("ingreso a eliminar") #NO ESTA REASIGNANDOSE EL NUEVO VALOR
+    st. write(cantidad)
+  return(video_np_recortada, cantidad)
    #verificar variables, globales y locales.
 
 def factorn (q,l):
@@ -237,6 +244,33 @@ def calculark (q):
   print('----------------------------------------')  
   return kp
 
+@st.cache (suppress_st_warning=True)
+def lector_video (uploader):
+    print ("yasta2")
+    video = uploader.read()
+    return (video)
+@st.cache (suppress_st_warning=True)
+def video_completo (cantidad_frames, matriz_np):
+  print("video completo")
+  r = np.zeros([cantidad_frames, 180])
+  progresbar = st.progress(0)
+  for j in range(cantidad_frames):
+    imagen = matriz_np[j,:,:]
+    imagen = np.uint8(imagen)
+    imagen_binarizada = binarizar(imagen, kernel1, kernel2, blocksize,constant)
+    contorno = calcularcontorno(imagen_binarizada,j)
+    dibujocontorno = dibujarcontorno(contorno,0) #por que esta aca esta?
+    coordenadas = calcularcentro (dibujocontorno)
+    polares = calcularpolares(contorno[0],coordenadas) #contorno 0 es e mas grande externo, para el interno cambiar a 1. 
+    discreto = discretizar(polares,180)
+    r[j,:] = (discreto[:,1])# radio y angulos
+    AyB = np.zeros([frames, 50, 2])
+    An,Bn = calcularcoeficientes(discreto)
+    AyB[j,:,0] = An
+    AyB[j,:,1] = Bn
+    progresbar.progress(j/cantidad_frames + 1/cantidad_frames)
+  return (r, AyB)
+
 header = st.container()
 imagenes = st.container()
 graficos = st.container()
@@ -256,7 +290,7 @@ with header:
     with col2:
         st.video(uploader)
 
-    video_bytes = uploader.read()
+    video_bytes = lector_video (uploader) #uploader.read()
     with open("video.mp4", "wb") as fp: #abrimos un contenedor donde escribimos el video    
         fp.write(video_bytes)
 
@@ -304,24 +338,26 @@ with header:
           dibujocontorno = dibujarcontorno(contorno,0) #por que esta aca esta?
           st.image(dibujocontorno, caption=f'Contorno de imagen {x+1}', clamp=True)
     with graficos: 
-      r = np.zeros([frames, 180])
-      progresbar = st.progress(0)
-      for j in range(frames):
-        imagen = video_np[j,:,:]
-        imagen = np.uint8(imagen)
-        imagen_binarizada = binarizar(imagen, kernel1, kernel2, blocksize,constant)
-        contorno = calcularcontorno(imagen_binarizada,j)
-        dibujocontorno = dibujarcontorno(contorno,0) #por que esta aca esta?
-        coordenadas = calcularcentro (dibujocontorno)
-        polares = calcularpolares(contorno[0],coordenadas) #contorno 0 es e mas grande externo, para el interno cambiar a 1. 
-        discreto = discretizar(polares,180)
-        r[j,:] = (discreto[:,1])# radio y angulos
-        AyB = np.zeros([frames, 50, 2])
-        An,Bn = calcularcoeficientes(discreto)
-        AyB[j,:,0] = An
-        AyB[j,:,1] = Bn
-        progresbar.progress(j/frames + 1/frames)
-      R = r.T # a dibujar
+
+      # r = np.zeros([frames, 180])
+      # progresbar = st.progress(0)
+      # for j in range(frames):
+      #   imagen = video_np[j,:,:]
+      #   imagen = np.uint8(imagen)
+      #   imagen_binarizada = binarizar(imagen, kernel1, kernel2, blocksize,constant)
+      #   contorno = calcularcontorno(imagen_binarizada,j)
+      #   dibujocontorno = dibujarcontorno(contorno,0) #por que esta aca esta?
+      #   coordenadas = calcularcentro (dibujocontorno)
+      #   polares = calcularpolares(contorno[0],coordenadas) #contorno 0 es e mas grande externo, para el interno cambiar a 1. 
+      #   discreto = discretizar(polares,180)
+      #   r[j,:] = (discreto[:,1])# radio y angulos
+      #   AyB = np.zeros([frames, 50, 2])
+      #   An,Bn = calcularcoeficientes(discreto)
+      #   AyB[j,:,0] = An
+      #   AyB[j,:,1] = Bn
+      #   progresbar.progress(j/frames + 1/frames)
+      r, matrizAyB= video_completo (frames, video_np)
+      R =r.T # a dibujar
     
     with imagenes:
       st.write('Grafico de radios del video')
@@ -345,28 +381,14 @@ with header:
         if boton_eliminador==True: #no salio. 
           st.write("Hola4")
           video_np_eliminador, frames_eliminador = eliminar(inicio, rango) #Nueva matriz
-          st.write(f'nuevo tamanio de matriz: {frames}')
-          r_eliminador= np.zeros([frames_eliminador, 180])
-          progresbar = st.progress(0)
-          for j in range(frames_eliminador):
-            imagen_eliminador = video_np_eliminador[j,:,:]
-            imagen_eliminador = np.uint8(imagen_eliminador) #importa el cambio de nombre?
-            imagen_binarizada = binarizar(imagen_eliminador, kernel1, kernel2, blocksize,constant)
-            contorno = calcularcontorno(imagen_binarizada,j)
-            dibujocontorno = dibujarcontorno(contorno,0) #por que esta aca esta?
-            coordenadas = calcularcentro (dibujocontorno)
-            polares = calcularpolares(contorno[0],coordenadas) #contorno 0 es e mas grande externo, para el interno cambiar a 1. 
-            discreto = discretizar(polares,180)
-            r[j,:] = (discreto[:,1])# radio y angulos
-            AyB = np.zeros([frames_eliminador, 50, 2])
-            An,Bn = calcularcoeficientes(discreto)
-            AyB[j,:,0] = An
-            AyB[j,:,1] = Bn
-            progresbar.progress(j/frames_eliminador + 1/frames_eliminador)
-          st.write("Hola5")
-          R = r.T # a dibujar
+          st.write(f'Nuevo tamanio de matriz: {frames_eliminador}')
+          r_eliminador, matrizAyB = video_completo (frames_eliminador, video_np_eliminador)#np.zeros([frames_eliminador, 180])
+          R = r_eliminador.T # a dibujar
           st.write('Nuevo grafico de radios del video')
-          st.line_chart(R)    
+          st.line_chart(R)  
+          Rpromedio=np.mean(r,axis=1) #dibujar promedio de cada frame
+          Rprom=np.mean(Rpromedio) #tiene radio promedio de promedio de cada frame
+          st.write(f"Nuevo radio promedio: {Rprom}")  
       
         #no se esta actualizando el numero de frames en barra de video original. 
       else:
@@ -375,8 +397,8 @@ with header:
       boton_procesador = st.button('Procesar imagenes')
       if boton_procesador == True :
         progreso = st.progress(0)
-        AyBn=AyB*(1/Rprom)
-        AyBmedia=np.zeros([50,2])
+        AyBn = matrizAyB*(1/Rprom)
+        AyBmedia = np.zeros([50,2])
         AyBmedia[:,0]=np.mean(AyBn[:,:,0],axis=0)
         AyBmedia[:,1]=np.mean(AyBn[:,:,1],axis=0)
         #print(AyBmedia)
@@ -386,7 +408,7 @@ with header:
           AyBresta[:,q,1]=AyBn[:,q,1]-AyBmedia[q,1]
         AyBcuadrado = AyBresta*AyBresta
         Vq = 0.25*(np.mean(AyBcuadrado[:,:,0],axis=0) + np.mean(AyBcuadrado[:,:,1],axis=0))
-        # return Vq
+        
         q_max = 50 #order of the Legendre function derivation q menor o igual a l identico a m. Era 25 orden del polinimio
         l_max = 200 # degree of the Legendre function, identico a n grado del polinomio
         polypolderi = sc.lpmn(q_max, l_max, 0) 
@@ -415,11 +437,8 @@ with header:
         kpromedio=promedio 
         fig, ax = plt.subplots()
         ax.scatter(matriz_k[:,0], matriz_k[:,1]) 
-        # ax.set_title("Grafico de k")   
-        # ax.set_ylabel("k")   # Establece el título del eje x
-        # ax.set_xlabel("q")   # Establece el título del eje y
-        # ax.set_ylim(0.1*(10**(-20)),100*(10**(-20)))
-        # ax.set_xlim(2,40)
+        ax.set_ylim(0.1*(10**(-16)),1*(10**(-19)))
+        ax.set_xlim([2,40])
         st.pyplot(fig)
         st.write(promedio) 
 
