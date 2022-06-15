@@ -112,10 +112,10 @@ def discretizar(pol,v):
     #ARREGLA FALTA DE ANGULOS 
     m = 0
     if len(discretizada_ord)<180: 
-      st.write ("hola")
+      #st.write ("hola")
       st.write ('Cambiar parametros de entrada')
     else: 
-      st.write ("hola2")
+      #st.write ("hola2")
       while m<len(discretizada_ord):
         if discretizada_ord[m,1]==0:
           if m==0:
@@ -159,11 +159,11 @@ def calcularcoeficientes(discre):
     Bn[n-1] = sumatoria/(2*np.pi)
   return (An,Bn)
 
-def eliminar(f,c):
+def eliminar(video_np_recortada, f,c):
+  st.write("ingreso a eliminar") 
   for i in range(0,c,1):
-    video_np_recortada = np.delete(video_np,int(f),0)
+    video_np_recortada = np.delete(video_np_recortada,int(f),0)
     cantidad = video_np_recortada.shape[0]
-    st.write("ingreso a eliminar") #NO ESTA REASIGNANDOSE EL NUEVO VALOR
     st. write(cantidad)
   return(video_np_recortada, cantidad)
    #verificar variables, globales y locales.
@@ -284,7 +284,7 @@ with header:
       uploader = st.file_uploader("Subir video", type=["avi", "mp4"])
   
   if uploader is not None:
-    print ("yasta")
+    print ("leyedo video")
     #file_details = {'filename':uploader.name, 'file type':uploader.type}
     #st.write (file_details)
     with col2:
@@ -308,7 +308,7 @@ with header:
     st.sidebar.title("Ventanas de filtados")
     kernel1 = st.sidebar.slider('Ventana 1', min_value=3, max_value=11, step=2)
     kernel2 = st.sidebar.slider('Ventana 2', min_value=3, max_value=11, step=2)
-    blocksize = st.sidebar.slider('Vecindad promediada', min_value=3, max_value=30, step=2)
+    blocksize = st.sidebar.slider('Vecindad promediada', min_value=3, max_value=35, step=2)
     constant = st.sidebar.slider('Costante de umbral', min_value= -3, max_value=1, step=1)      
 
     n = 0
@@ -339,23 +339,6 @@ with header:
           st.image(dibujocontorno, caption=f'Contorno de imagen {x+1}', clamp=True)
     with graficos: 
 
-      # r = np.zeros([frames, 180])
-      # progresbar = st.progress(0)
-      # for j in range(frames):
-      #   imagen = video_np[j,:,:]
-      #   imagen = np.uint8(imagen)
-      #   imagen_binarizada = binarizar(imagen, kernel1, kernel2, blocksize,constant)
-      #   contorno = calcularcontorno(imagen_binarizada,j)
-      #   dibujocontorno = dibujarcontorno(contorno,0) #por que esta aca esta?
-      #   coordenadas = calcularcentro (dibujocontorno)
-      #   polares = calcularpolares(contorno[0],coordenadas) #contorno 0 es e mas grande externo, para el interno cambiar a 1. 
-      #   discreto = discretizar(polares,180)
-      #   r[j,:] = (discreto[:,1])# radio y angulos
-      #   AyB = np.zeros([frames, 50, 2])
-      #   An,Bn = calcularcoeficientes(discreto)
-      #   AyB[j,:,0] = An
-      #   AyB[j,:,1] = Bn
-      #   progresbar.progress(j/frames + 1/frames)
       r, matrizAyB= video_completo (frames, video_np)
       R =r.T # a dibujar
     
@@ -377,12 +360,12 @@ with header:
       st.write(rango)
       boton_eliminador = st.button('Eliminar frames')
       if inicio>0 or rango>0: 
-        st.write("Hola3")
+        #st.write("Hola3")
         if boton_eliminador==True: #no salio. 
-          st.write("Hola4")
-          video_np_eliminador, frames_eliminador = eliminar(inicio, rango) #Nueva matriz
-          st.write(f'Nuevo tamanio de matriz: {frames_eliminador}')
-          r_eliminador, matrizAyB = video_completo (frames_eliminador, video_np_eliminador)#np.zeros([frames_eliminador, 180])
+          #st.write("Hola4")
+          video_np, frames = eliminar(video_np, inicio, rango) #Nueva matriz
+          st.write(f'Nuevo tamanio de matriz: {frames}')
+          r_eliminador, matrizAyB = video_completo (frames, video_np)#np.zeros([frames_eliminador, 180])
           R = r_eliminador.T # a dibujar
           st.write('Nuevo grafico de radios del video')
           st.line_chart(R)  
@@ -396,7 +379,6 @@ with header:
     with procesador: 
       boton_procesador = st.button('Procesar imagenes')
       if boton_procesador == True :
-        progreso = st.progress(0)
         AyBn = matrizAyB*(1/Rprom)
         AyBmedia = np.zeros([50,2])
         AyBmedia[:,0]=np.mean(AyBn[:,:,0],axis=0)
@@ -421,11 +403,12 @@ with header:
         # primer numero (q) orden del polinomio (asociado al orden de derivacion del polinomio) y el segundo(l) es el grado (asociado al grado de derivacion del polinomio)
         # se muestran los polinomios de legendre de orden de derivacion 0, es decir,los propiamente dichos polinomios de legendre valuados en x=0
         matriz_k = np.zeros((q_max,2)) #usamos la funcion mas importante
-        for i in range(0, q_max-1):
-          progreso.progress(i/q_max)
+        progresbar = st.progress(0)
+        for i in range(0, q_max-15):
           matriz_k[i,1] = calculark (i)
           matriz_k[i,0] = i
           st.write(matriz_k[i,1])
+          progresbar.progress(i/(q_max-15) + 1/(q_max-15))
         #print(matriz_k)
         suma = 0
         can = 0
@@ -436,16 +419,16 @@ with header:
         
         kpromedio=promedio 
         fig, ax = plt.subplots()
+        #fig = plt.figure(figsize=(15,20))
         ax.scatter(matriz_k[:,0], matriz_k[:,1]) 
-        ax.set_ylim(0.1*(10**(-16)),1*(10**(-19)))
-        ax.set_xlim([2,40])
+        ax.set_ylim(min(matriz_k[:,1]),max(matriz_k[:,1]))
+        ax.set_xlim([2,35])
         st.pyplot(fig)
         st.write(promedio) 
 
       else:
-        st.write('nada aun')
+        st.write('No se han preocesado datos aun')
 
-      #def calculo_Vq (AyB,Rprom):
 
 
  
