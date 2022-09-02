@@ -1,3 +1,4 @@
+from pickle import NONE
 import streamlit as st
 import numpy as np  # procesamiento matricial
 import matplotlib.pyplot as plt  # para mostrar imagenes
@@ -8,6 +9,8 @@ import scipy.special as sc
 import math as mt
 
 from sympy import C
+
+
 
 @st.cache 
 def binarizar(imagen,n1,n2,bl,c):
@@ -160,11 +163,11 @@ def calcularcoeficientes(discre):
   return (An,Bn)
 
 def eliminar(video_np_recortada, f,c):
-  st.write("ingreso a eliminar") 
-  for i in range(0,c,1):
+  st.write("Eliminando") 
+  for i in range(0,c):
     video_np_recortada = np.delete(video_np_recortada,int(f),0)
     cantidad = video_np_recortada.shape[0]
-    st. write(cantidad)
+    #st. write(cantidad)
   return(video_np_recortada, cantidad)
    #verificar variables, globales y locales.
 
@@ -193,65 +196,28 @@ def sumatoria (q,t):
   return Sq
 
 def calculark (q):
-  kBT=4*10**(-21) #julios constate por temperatura en kelvin
-  radio_prom= 0.3*(10**(-6)) #metros 0.3micrometro
-  kp=1.4*(10**(-22))
-  teffp=1*(10**(-6))
-  listateff=[]
-  teffmin=-1*(10**(-9))
-  teffmax=1*(10**(-4))
-  listateff.append(teffmin)
-  listateff.append(teffmax)
-
+  kBT=4*(10**(-21))#julios constate por temperatura en kelvin
+  kp=1.4*(10**(-18))
+  teff_indice=1*10**(-8)
   p=0
   error=100
-  while error>1:
-    p=p+1
-    print(f"ciclo {p}")
-    paso=(max(listateff)-min(listateff))/400
-    inicio=min(listateff)
-    fin=max(listateff)
-    print(f" k: {kp}+/-{round(error,1)}%")
-    for i in range(6):
-      listak=[]
-      for teff_indice in np.arange(inicio,fin,paso):#teff_idice es la teff que ira tomando valores del rango 
-        t=(teff_indice*radio_prom*radio_prom)/kp# adimensional
-        Sq=sumatoria (q,t)
-        k=Sq*kBT/Vq[q]
-        listak.append(k)
-      kp=sum(listak)/float(len(listak))
-      print(i,min(listak),max(listak))
-      error=abs((max(listak)-min(listak))/kp)*40
-
-    paso=(max(listak)-min(listak))/400
-    inicio=min(listak)
-    fin=max(listak)
-    print(f" tension: {teffp}+/-{max(listateff)-min(listateff)}")
-    for i in range (3):
-      listateff=[]
-      for k_indice in np.arange(inicio,fin,paso):
-        t=(teffp*radio_prom*radio_prom)/k_indice# adimensional 
-        Sq=sumatoria (q,t)
-        teff=Sq*t*kBT/(Vq[q]*radio_prom*radio_prom)
-        listateff.append(teff)
-      teffp=sum(listateff)/float(len(listateff))
-      print(i,min(listateff),max(listateff))
-    print('-----')
+  for i in range(6):
+    t=(teff_indice*radio_prom*radio_prom)/kp# adimensional
+    Sq=sumatoria (q,t)
+    kp=Sq*kBT/Vq[q]
+    print (kp)
   print('----------------------------------------')
   print(f" q={q}")
   print(f" k: {kp}+/-{round(error,1)}%")
-  print(f" tension efectiva: {teffp}+/-{max(listateff)-min(listateff)}")
   print('----------------------------------------')  
   return kp
-
 @st.cache (suppress_st_warning=True)
 def lector_video (uploader):
-    print ("yasta2")
     video = uploader.read()
     return (video)
+
 @st.cache (suppress_st_warning=True)
 def video_completo (cantidad_frames, matriz_np):
-  print("video completo")
   r = np.zeros([cantidad_frames, 180])
   progresbar = st.progress(0)
   for j in range(cantidad_frames):
@@ -284,7 +250,6 @@ with header:
       uploader = st.file_uploader("Subir video", type=["avi", "mp4"])
   
   if uploader is not None:
-    print ("leyedo video")
     #file_details = {'filename':uploader.name, 'file type':uploader.type}
     #st.write (file_details)
     with col2:
@@ -304,12 +269,13 @@ with header:
 
     st.sidebar.title("Barra de variables")
     x = st.sidebar.slider('Imagen en el video', 0, frames-1, 1, key=123)
-  
+    escala =  st.sidebar.number_input('Escala en micrómetros por pixel',0)
+    print (escala)
     st.sidebar.title("Ventanas de filtados")
     kernel1 = st.sidebar.slider('Ventana 1', min_value=3, max_value=11, step=2)
     kernel2 = st.sidebar.slider('Ventana 2', min_value=3, max_value=11, step=2)
     blocksize = st.sidebar.slider('Vecindad promediada', min_value=3, max_value=35, step=2)
-    constant = st.sidebar.slider('Costante de umbral', min_value= -3, max_value=1, step=1)      
+    constant = st.sidebar.slider('Constante de umbral', min_value= -3, max_value=1, step=1)      
 
     n = 0
     while lector.isOpened():
@@ -319,67 +285,73 @@ with header:
         video_np[n,:,:]=gray
         n = n+1
       else:
-        st.write ("Se termino de leer video")
+        st.write ("Se terminó de leer video")
         break
 
     lector.release()
     video_np = video_np.astype(np.uint8)
 ######################################
+
     with imagenes: 
       col4, col5, col6 = st.columns(3)
       with col4:
           #st.subheader("Grises")
-          st.image(video_np[x], caption=f'Frame numero {x+1}', clamp=True)
+          st.image(video_np[x], caption=f'Frame número {x+1}', clamp=True)
       with col5:
           imagen_binarizada = binarizar(video_np[x], n1=kernel1, n2=kernel2, bl=blocksize, c=constant)
-          st.image(imagen_binarizada, caption=f'Frame numero {x+1} binarizado', clamp=True)
+          st.image(imagen_binarizada, caption=f'Frame número {x+1} binarizado', clamp=True)
       with col6:
           contorno = calcularcontorno(imagen_binarizada,x)
           dibujocontorno = dibujarcontorno(contorno,0) #por que esta aca esta?
           st.image(dibujocontorno, caption=f'Contorno de imagen {x+1}', clamp=True)
+
     with graficos: 
+      # video_comp = st.button('Procesar video completo')
+      # if video_comp ==True:
+        r, matrizAyB= video_completo(frames, video_np)
+        R =r.T # a dibujar
+        st.write('Gráfico de radios del video')
+        st.line_chart(R)  #grafico de radio por frame
+        Rpromedio=np.mean(r,axis=1) #dibujar promedio de cada frame
+        Rprom=np.mean(Rpromedio) #tiene radio promedio de promedio de cada frame
+        st.session_state['matrizAyB'] = matrizAyB
+        st.session_state['Rprom'] = Rprom
+        st.write(f"Radio promedio: {Rprom}") 
 
-      r, matrizAyB= video_completo (frames, video_np)
-      R =r.T # a dibujar
-    
-    with imagenes:
-      st.write('Grafico de radios del video')
-      st.line_chart(R)  #grafico de radio por frame
-      Rpromedio=np.mean(r,axis=1) #dibujar promedio de cada frame
-      Rprom=np.mean(Rpromedio) #tiene radio promedio de promedio de cada frame
-      st.write(f"Radio promedio: {Rprom}")
-
-    #calculo de coeficientes, genero matriz de coordenadas. 
-    
-  #boton  elimnar frames, ver que frames esta mal. 
-  #se ve el grafico y se ajustan parametrso de filtrado para luego calcular contornos
+      # else: 
+      #   st.write("aun no se procesaron todas imagenes")
     with eliminador: 
-      inicio = st.sidebar.number_input('Inicio de eliminacion',0)
-      st.write(inicio)
-      rango = st.sidebar.number_input('Cuantos frames siguientes?',0,50)
-      st.write(rango)
-      boton_eliminador = st.button('Eliminar frames')
+      inicio = st.sidebar.number_input('Inicio de eliminación',0)
+      st.write(f'Datos de inicio de eiminación ingresado: {inicio}')
+      rango = st.sidebar.number_input('Cuántos frames siguientes?',0,50)
+      st.write(f'Datos de frames consecutivos ingresado: {rango}')
+      boton_eliminador = st.button('Eliminar frames y procesar nueva matriz')
       if inicio>0 or rango>0: 
-        #st.write("Hola3")
         if boton_eliminador==True: #no salio. 
-          #st.write("Hola4")
           video_np, frames = eliminar(video_np, inicio, rango) #Nueva matriz
-          st.write(f'Nuevo tamanio de matriz: {frames}')
-          r_eliminador, matrizAyB = video_completo (frames, video_np)#np.zeros([frames_eliminador, 180])
+          st.write(f'Nuevo tamaño de matriz: {frames}')
+          r_eliminador, matrizAyB = video_completo(frames, video_np)#np.zeros([frames_eliminador, 180])
+          # st.write(matrizAyB)
           R = r_eliminador.T # a dibujar
-          st.write('Nuevo grafico de radios del video')
+          st.write('Nuevo gráfico de radios del video')
           st.line_chart(R)  
-          Rpromedio=np.mean(r,axis=1) #dibujar promedio de cada frame
+          Rpromedio=np.mean(r_eliminador,axis=1) #dibujar promedio de cada frame
           Rprom=np.mean(Rpromedio) #tiene radio promedio de promedio de cada frame
+          st.session_state['matrizAyB'] = matrizAyB
+          st.session_state['Rprom'] = Rprom
           st.write(f"Nuevo radio promedio: {Rprom}")  
-      
+        else:
+            st.write('Presionar botón de eliminación')
         #no se esta actualizando el numero de frames en barra de video original. 
       else:
-        st.write('No se han eliminado imagenes')
+        st.write('No se han eliminado imágenes')
+    
     with procesador: 
-      boton_procesador = st.button('Procesar imagenes')
-      if boton_procesador == True :
-        AyBn = matrizAyB*(1/Rprom)
+      # boton_procesador = st.button('Procesar contornos')
+      # if boton_procesador == True:
+        AyBn = st.session_state.matrizAyB *(1/st.session_state.Rprom)
+        dimension = st.session_state.matrizAyB.shape[0]
+        st.write(f"Cantidad de frames actual: {dimension} .")
         AyBmedia = np.zeros([50,2])
         AyBmedia[:,0]=np.mean(AyBn[:,:,0],axis=0)
         AyBmedia[:,1]=np.mean(AyBn[:,:,1],axis=0)
@@ -403,11 +375,12 @@ with header:
         # primer numero (q) orden del polinomio (asociado al orden de derivacion del polinomio) y el segundo(l) es el grado (asociado al grado de derivacion del polinomio)
         # se muestran los polinomios de legendre de orden de derivacion 0, es decir,los propiamente dichos polinomios de legendre valuados en x=0
         matriz_k = np.zeros((q_max,2)) #usamos la funcion mas importante
+        radio_prom= Rprom*escala*(10**(-6)) #unidad(metros)
         progresbar = st.progress(0)
         for i in range(0, q_max-15):
           matriz_k[i,1] = calculark (i)
           matriz_k[i,0] = i
-          st.write(matriz_k[i,1])
+          # st.write(matriz_k[i,1])
           progresbar.progress(i/(q_max-15) + 1/(q_max-15))
         #print(matriz_k)
         suma = 0
@@ -421,14 +394,18 @@ with header:
         fig, ax = plt.subplots()
         #fig = plt.figure(figsize=(15,20))
         ax.scatter(matriz_k[:,0], matriz_k[:,1]) 
-        ax.set_ylim(min(matriz_k[:,1]),max(matriz_k[:,1]))
+        limin=0.01*kpromedio #limite inferior de k
+        limsu=4*kpromedio  #limite superior de k
+        ax.set_xlabel("Número de modo 'q'")
+        ax.set_ylabel("Rigidez a la flexión en Julios (J)")
+        ax.set_ylim(limin,limsu)
         ax.set_xlim([2,35])
         st.pyplot(fig)
-        st.write(promedio) 
+        st.write(f"Valor promedio de k en el rango de 'q' 6 a 25: {kpromedio} J.") 
 
-      else:
-        st.write('No se han preocesado datos aun')
+      # else:
+      #   st.write('No se han preocesado datos aun')
 
 
 
- 
+  
