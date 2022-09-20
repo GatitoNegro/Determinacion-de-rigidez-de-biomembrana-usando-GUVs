@@ -26,6 +26,7 @@ El usuario o laboratorista puede cargar el video a analizar en formato .mp4 desd
 Dada la variedad en la calidad de la señal y tipos de ruido de los  videos que se pueden obtener por microscopía óptica confocal, se tiene la posibilidad de ajustar parámetros de procesamiento de imágenes, preestablecidos por defecto, para lograr los ajustes adecuados para el video que desea analizar.
 
 Se dispone la información en gráficos e impresiones por pantalla, tanto en etapas intermedias (resultados en cada instancia) como al finalizar el procesamiento (valores de rigidez a la flexión de la membrana), logrando así brindar información complementaria que ayuda al laboratorista en su proceso de análisis o estudio en desarrollo en el cual haga uso de esta información. 
+
 Se habilitan los manuales instructivos de ambas plataformas adjuntos en este mismo repositorio. 
 
 #### Directora:  Rulloni, Valeria
