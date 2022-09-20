@@ -1,9 +1,9 @@
 # Proyecto-Integrador-Determinacion-de-rigidez-de-biomembrana-usando-GUVs
-## guvis guvis
+# guvis guvis
 
-Universidad Nacional de Córdoba
-Facultad de Ciencias Exactas Físicas y Naturales
-Ingeniería Biomédica
+#### Universidad Nacional de Córdoba
+#### Facultad de Ciencias Exactas Físicas y Naturales
+#### Ingeniería Biomédica
 
 
 Determinación de la rigidez a la flexión de biomembranas mediante el análisis de la fluctuación de su forma a partir de imágenes provenientes de videos de microscopía
@@ -13,8 +13,8 @@ Determinación de la rigidez a la flexión de biomembranas mediante el análisis
 ### Amante, Sofia Veronica
 ### Scurti, Pablo Ezequiel
 
-### Directora:  Rulloni, Valeria
-### Co-Directora: Wilke, Natalia
+#### Directora:  Rulloni, Valeria
+#### Co-Directora: Wilke, Natalia
 
 
 #### Se pretende generar una herramienta que permita determinar la rigidez de membranas de vesículas unilamelares gigantes GUVs (por sus siglas en inglés, giant unilamellar vesicles) en presencia de diversos efectores, principalmente péptidos antimicrobianos. \n
