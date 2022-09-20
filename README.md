@@ -10,19 +10,17 @@ Determinación de la rigidez a la flexión de biomembranas mediante el análisis
 
 
 ### Autores:
-Amante, Sofia Veronica - Matrícula:  37634262
-Scurti, Pablo Ezequiel - Matrícula:  38645687
+### Amante, Sofia Veronica
+### Scurti, Pablo Ezequiel
 
-### Directoras:  
-Rulloni, Valeria
-Co-Directora: Wilke, Natalia
+### Directora:  Rulloni, Valeria
+### Co-Directora: Wilke, Natalia
 
 
 #### Se pretende generar una herramienta que permita determinar la rigidez de membranas de vesículas unilamelares gigantes GUVs (por sus siglas en inglés, giant unilamellar vesicles) en presencia de diversos efectores, principalmente péptidos antimicrobianos. \n
 
-#### Las GUVs son muy utilizadas como modelo de biomembrana debido a que tienen tamaños micrométricos y por tanto pueden observarse mediante microscopía óptica.
-
-El desarrollo de este proyecto se realiza en lenguaje Python y comienza en la utilización de los videos de microscopía proporcionados por el laboratorio de Biomembranas del CIQUIBIC. Se inicia con la codificación de sus imágenes en matrices utilizables para su procesamiento digital en escala de grises que implica el filtrado morfológico y determinación del contorno en una escala bidimensional (ángulo polar, radio). Esta re-parametrización del contorno lo transforma en una señal unidimensional, radio en función del ángulo polar, para ser analizada según la variación en el tiempo de  sus componentes de frecuencia.
+Las GUVs son muy utilizadas como modelo de biomembrana debido a que tienen tamaños micrométricos y por tanto pueden observarse mediante microscopía óptica.
+El desarrollo de este proyecto se realiza en lenguaje Python y comienza en la utilización de los videos de microscopía proporcionados por el laboratorio de Biomembranas del CIQUIBIC. Se inicia con la codificación de sus imágenes en matrices utilizables para su procesamiento digital en escala de grises que implica el filtrado morfológico y determinación del contorno en una escala bidimensional (ángulo polar, radio). Esta re-parametrización del contorno lo transforma en una señal unidimensional, radio en función del ángulo polar, para ser analizada según la variación en el tiempo de  sus componentes de frecuencia. \n
 
 Luego continúa con el procesamiento matemático de estos datos utilizando un modelo que describe la amplitud cuadrática media de modos armónicos esféricos, la cual depende de la rigidez a la flexión de este tipo de membranas. 
 Durante este proceso se utilizan diversidad de herramientas para su desarrollo. Por un lado definiciones, desarrollos y funciones matemáticas como polinomios de Legendre, modos de contorno expandido de Fourier, varianza y metodologías de iteración para definir un resultado en la rigidez a la flexión de las membranas, con el mínimo error. Por otro lado se tienen las herramientas virtuales y de software utilizadas tanto para el desarrollo, visualización y generación de interfaz de interacciones con los usuarios, ellas son Colaboratory, Visual Studio Code, plataforma Github y Streamlit. 
