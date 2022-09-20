@@ -1,5 +1,5 @@
 # Proyecto-Integrador-Determinacion-de-rigidez-de-biomembrana-usando-GUVs
-# guvis guvis
+## guvis guvis
 
 Universidad Nacional de Córdoba
 Facultad de Ciencias Exactas Físicas y Naturales
@@ -9,19 +9,18 @@ Ingeniería Biomédica
 Determinación de la rigidez a la flexión de biomembranas mediante el análisis de la fluctuación de su forma a partir de imágenes provenientes de videos de microscopía
 
 
-Autores:
+### Autores:
 Amante, Sofia Veronica - Matrícula:  37634262
 Scurti, Pablo Ezequiel - Matrícula:  38645687
 
-Directoras:  
+### Directoras:  
 Rulloni, Valeria
 Co-Directora: Wilke, Natalia
 
-Córdoba, septiembre de 2022
 
-Se pretende generar una herramienta que permita determinar la rigidez de membranas de vesículas unilamelares gigantes GUVs (por sus siglas en inglés, giant unilamellar vesicles) en presencia de diversos efectores, principalmente péptidos antimicrobianos. 
+#### Se pretende generar una herramienta que permita determinar la rigidez de membranas de vesículas unilamelares gigantes GUVs (por sus siglas en inglés, giant unilamellar vesicles) en presencia de diversos efectores, principalmente péptidos antimicrobianos. \n
 
-Las GUVs son muy utilizadas como modelo de biomembrana debido a que tienen tamaños micrométricos y por tanto pueden observarse mediante microscopía óptica.
+#### Las GUVs son muy utilizadas como modelo de biomembrana debido a que tienen tamaños micrométricos y por tanto pueden observarse mediante microscopía óptica.
 
 El desarrollo de este proyecto se realiza en lenguaje Python y comienza en la utilización de los videos de microscopía proporcionados por el laboratorio de Biomembranas del CIQUIBIC. Se inicia con la codificación de sus imágenes en matrices utilizables para su procesamiento digital en escala de grises que implica el filtrado morfológico y determinación del contorno en una escala bidimensional (ángulo polar, radio). Esta re-parametrización del contorno lo transforma en una señal unidimensional, radio en función del ángulo polar, para ser analizada según la variación en el tiempo de  sus componentes de frecuencia.
 
@@ -32,3 +31,5 @@ El usuario o laboratorista puede cargar el video a analizar en formato .mp4 desd
 Dada la variedad en la calidad de la señal y tipos de ruido de los  videos que se pueden obtener por microscopía óptica confocal, se tiene la posibilidad de ajustar parámetros de procesamiento de imágenes, preestablecidos por defecto, para lograr los ajustes adecuados para el video que desea analizar.
 Se dispone la información en gráficos e impresiones por pantalla, tanto en etapas intermedias (resultados en cada instancia) como al finalizar el procesamiento (valores de rigidez a la flexión de la membrana), logrando así brindar información complementaria que ayuda al laboratorista en su proceso de análisis o estudio en desarrollo en el cual haga uso de esta información. 
 Se habilitan los manuales instructivos de ambas plataformas adjuntos en este mismo repositorio. 
+
+### Córdoba, septiembre de 2022
