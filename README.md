@@ -6,7 +6,7 @@
 #### Ingeniería Biomédica
 
 
-Determinación de la rigidez a la flexión de biomembranas mediante el análisis de la fluctuación de su forma a partir de imágenes provenientes de videos de microscopía
+Tema: Determinación de la rigidez a la flexión de biomembranas mediante el análisis de la fluctuación de su forma a partir de imágenes provenientes de videos de microscopía
 
 
 ### Autores:
