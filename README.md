@@ -27,6 +27,10 @@ Dada la variedad en la calidad de la señal y tipos de ruido de los  videos que 
 
 Se dispone la información en gráficos e impresiones por pantalla, tanto en etapas intermedias (resultados en cada instancia) como al finalizar el procesamiento (valores de rigidez a la flexión de la membrana), logrando así brindar información complementaria que ayuda al laboratorista en su proceso de análisis o estudio en desarrollo en el cual haga uso de esta información. 
 
+Accesos: 
+Plataforma Streamlit: https://github.com/GatitoNegro/Determinacion-de-rigidez-de-biomembrana-usando-GUVs/blob/main/demo_streamlit.py
+Plataforma Colaboratory: desde archivo .ipynb de este repositorio. 
+
 Se habilitan los manuales instructivos de ambas plataformas adjuntos en este mismo repositorio. 
 
 #### Directora:  Rulloni, Valeria
